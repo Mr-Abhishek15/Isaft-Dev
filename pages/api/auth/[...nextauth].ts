@@ -5,8 +5,8 @@ import { NextAuthOptions } from "next-auth";
 const options: NextAuthOptions = {
     providers: [
         GoogleProvider({
-            clientId: "92350867177-ra25pdljeksmt7q8nn8h07m3qosleikr.apps.googleusercontent.com", 
-            clientSecret: "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",
+            clientId: "", 
+            clientSecret: "",
         }),
     ],
     secret: "good",
