@@ -14,9 +14,9 @@ interface NavigationItem {
 }
 
 const navigation = [
-  { name: 'Home', href: "/Home", current: true },
+  { name: 'Home', href: "/", current: true },
   { name: 'How it works', href: '#', current: false },
-  { name: 'Calender', href: '#', current: false },
+  { name: 'Calender', href: '/Upload', current: false },
   { name: 'Contact', href: '#', current: false },
 ]
 
@@ -30,10 +30,10 @@ function Navbar() {
     const user = useSelector((state) => state?.user);
   const token = useSelector((state) => state?.token);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+console.log("data",session)
   const config = {
-    clientId: "101909715974818719606",
-    apiKey: "AIzaSyAExtwQqRvPgbAkpOqLWG1aQaL9n-bqmwk",
+    clientId: "92350867177-ra25pdljeksmt7q8nn8h07m3qosleikr.apps.googleusercontent.com",
+    apiKey: "AIzaSyBuR94bcmAhc085Jp_Qy4eTvr6sgRgOBLY",
     scope: "https://www.googleapis.com/auth/calendar",
     discoveryDocs: [
       "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
@@ -46,6 +46,7 @@ function Navbar() {
                         setIsAuthenticated(true);
                   
 };
+console.log("user",user)
 
 // Handle Google Calendar Sign Out
 const handleGoogleSignOut = () => {
@@ -129,7 +130,7 @@ const handleGoogleSignOut = () => {
                    
                     <img
                     className="h-8 w-8 rounded-full"
-                    src="https://png.pngtree.com/element_our/20190604/ourmid/pngtree-user-avatar-boy-image_1482937.jpg"
+                    src={session?.user?.image}
                     alt=""
                   />
               
@@ -150,7 +151,7 @@ const handleGoogleSignOut = () => {
                         <p
                           className={classNames(active ? 'bg-gray-100' : '', 'block  text-center px-4 py-2 text-sm text-gray-700')}
                         >
-                 Test: User
+                 Test: {session?.user?.name ?? ""}
 
                         </p>
                       )}
