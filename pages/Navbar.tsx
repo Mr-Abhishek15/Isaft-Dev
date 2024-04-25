@@ -76,7 +76,7 @@ const handleGoogleSignOut = () => {
             </div>
             <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             {typeof user?.user?.email != "undefined"  || session && session.user ? (
-            <Link href="/Home">
+            <Link href="/">
               <div className="flex flex-shrink-0 items-center">
                 <img
                   className="h-8 w-auto rounded-3xl"
