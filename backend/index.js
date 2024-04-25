@@ -4,7 +4,7 @@ const pdfjs = require("pdfjs-dist/es5/build/pdf");
 const cors = require("cors");
 
 const app = express();
-const port = 5000;
+const port = 8000;
 
 app.use(cors());
 
@@ -17,27 +17,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     const content = await getItems(fileBuffer);
     res.json({ content });
   } catch (error) {
+    console.error("Error processing PDF:", error); // Log the error for debugging
     res.status(500).send("Error processing PDF.");
-  }
-});
-
-app.post("/create-event", async (req, res) => {
-  const { eventDetails, token } = req.body;
-
-  try {
-    const response = await axios.post(
-      "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-      eventDetails,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create event" });
   }
 });
 
@@ -49,6 +30,9 @@ async function getContent(src) {
 
 async function getItems(src) {
   const content = await getContent(src);
+  if (!content || !content.items) {
+    throw new Error("Invalid content received from PDF.");
+  }
   const items = content.items.map((item) => item.str);
   return items;
 }

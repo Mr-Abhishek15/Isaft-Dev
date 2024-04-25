@@ -9,20 +9,30 @@ import ApiCalendar from "react-google-calendar-api";
 
 // Utility function to extract patterns from text
 const extractPatterns = (text) => {
-    const amountRegex = /Amount: \$\d+\.\d{2}/;
-    const expiryDateRegex = /Expiry Date: \d{4}/;
+  // Regular expressions to match amount and date
+  const amountRegex = /₹\s*\d+(,\d+)*(\.\d{2})?/;
+  const dateRegex = /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}\b/;
 
-    const amountMatch = text.match(amountRegex);
-    const expiryDateMatch = text.match(expiryDateRegex);
+  // Match amount and date
+  const amountMatch = text.match(amountRegex);
+  const dateMatch = text.match(dateRegex);
 
-    const extractedData = [];
-    if (amountMatch) {
-        extractedData.push(amountMatch[0]);
-    }
-    if (expiryDateMatch) {
-        extractedData.push(expiryDateMatch[0]);
-    }
-    return extractedData;
+  // Extracted data object
+  const extractedData = {};
+
+  // Store amount and date if matched
+  if (amountMatch) {
+      extractedData.amount = amountMatch[0];
+  }
+  if (dateMatch) {
+      extractedData.date = new Date(dateMatch[0]);
+  }
+
+  // Extract description
+  const description = text.substring(text.indexOf('Item'), text.indexOf('Subtotal')).trim();
+  extractedData.description = description;
+
+  return extractedData;
 };
 
 const FileDropzone = ({ onFileChange,file }) => (
@@ -66,9 +76,11 @@ const Home = () => {
       formData.append('file', file);
   
       try {
-          const { data } = await axios.post('http://localhost:5000/upload', formData);
+          const { data } = await axios.post('http://localhost:8000/upload', formData);
           const extractedData = extractPatterns(data.content.join(' '));
           setContent(extractedData);
+          console.log("data:", data.content.join(' '))
+          console.log("extracted data:", extractedData)
           alert(extractedData)
       } catch (error) {
           console.error('Error uploading PDF:', error);
@@ -78,32 +90,43 @@ const Home = () => {
   
 
   const sendCalendarInvite = async () => {
-    const expiryDate = new Date("2024-03-18");
-    const endDate = new Date(expiryDate);
-    endDate.setHours(23, 59, 59); 
+
+    const expiryDate = new Date("2024-03-29");
+    console.log("amount", content?.amount)
+    // Convert date to the required format
+    const eventDate = new Date(expiryDate);
+    eventDate.setHours(23, 59, 59); 
+
+    const formattedDate = eventDate.toISOString().split('T')[0];
+    console.log("event date",eventDate)
+    console.log("formateed date",formattedDate)
+    // Prepare event details
+
     const eventDetails = {
         summary: 'Payment Reminder',
-        description: `You have a payment of 5000 due on 16th March.`,
+        description: `You have a payment of ${content?.amount} due on ${formattedDate}. ${content?.description}`,
         start: {
-            dateTime: new Date().toISOString(), 
+            dateTime: new Date().toISOString(),
             timeZone: 'UTC',
         },
         end: {
-            dateTime: endDate?.toISOString(), 
+            dateTime: new Date(eventDate).toISOString(),
             timeZone: 'UTC',
         },
-        attendees: [{ email: useremail }], 
+        attendees: [{ email: useremail }],
     };
-    if (apiCalendar.sign) { 
-      apiCalendar.createEvent(eventDetails)
-        .then(result => {
-          console.log('Event created:', result);
-        })
-        .catch(error => {
-          console.error('Error creating event:', error);
-        });
+
+    // Create event
+    if (apiCalendar.sign) {
+        apiCalendar.createEvent(eventDetails)
+            .then(result => {
+                console.log('Event created:', result);
+            })
+            .catch(error => {
+                console.error('Error creating event:', error);
+            });
     } else {
-      apiCalendar.handleAuthClick();
+        apiCalendar.handleAuthClick();
     }
 };
 
@@ -138,9 +161,9 @@ const Home = () => {
           <div>
                 <h3>PDF Content:</h3>
                 <ul>
-                    {content.map((item, index) => (
+                    {/* {content.map((item, index) => (
                         <li key={index}>{item}</li>
-                    ))}
+                    ))} */}
                 </ul>
             </div>
           <ToastContainer />
